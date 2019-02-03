@@ -3,14 +3,26 @@
 
 #include <string>
 
+using std::string; 
+
 class KeePassFile
 {
  public:
-   KeePassFile(std::string path);
+   KeePassFile(string path);
+
+   struct Header;
+
+   /**
+    * Returns the header of the keepass file. 
+    */
+   Header header() const;
 
  private:
-   std::string _file_path;
+   string m_filePath;
 };
 
+struct KeePassFile::Header {
+
+};
 #endif
 

@@ -1,6 +1,3 @@
 #include "KeePassFile.h"
 
-KeePassFile::KeePassFile(std::string path)
-{
-   _file_path = path;
-}
+KeePassFile::KeePassFile(string path): m_filePath(path) { }
