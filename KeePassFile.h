@@ -3,26 +3,33 @@
 
 #include <string>
 
-using std::string; 
+using std::string;
+
+enum class KeepassVersion: unsigned short {
+    UNKNOWN = 0, KDB_1, KDBX_2, KDBX_3, KDBX_4
+};
+
 
 class KeePassFile
 {
+
  public:
+
    KeePassFile(string path);
 
-   struct Header;
-
-   /**
-    * Returns the header of the keepass file. 
-    */
-   Header header() const;
+   KeepassVersion version() const;
 
  private:
+
+   void readHeader();
+
    string m_filePath;
+
+   KeepassVersion m_version;
+
 };
 
-struct KeePassFile::Header {
 
-};
+
 #endif
 
