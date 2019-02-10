@@ -5,56 +5,66 @@
 
 using namespace std;
 
-const uint32_t signature_1_magic = 0x9AA2D903;
-const uint32_t signature_2_KP_1 = 0xB54BFB65;
-const uint32_t signature_2_KP_2_Beta = 0xB54BFB66;
-const uint32_t signature_2_KP_2 = 0xB54BFB67;
+/* ---  KeepassFileException members --- */
 
-/*
-.kdb and .kdbx file formats’ header first have 2 fields of 4 bytes each that are the file signatures (cf KdbxFile.cs of Keepass2 source code).
+KeepassFileException::KeepassFileException(const string msg): m_msg(msg) {
 
-File Signature 1 (the first field) will always have a value of 0x9AA2D903 .
+}
 
-File Signature 2 (the second field) can have (for now) 3 different value, each value indicating the file format/version :
+const char* KeepassFileException::what() const noexcept {
+    return m_msg.c_str();
+}
 
-for .kdb files (KeePass 1.x file format) : 0xB54BFB65 ,
-for kdbx file of KeePass 2.x pre-release (alpha & beta) : 0xB54BFB66 ,
-for kdbx file of KeePass post-release : 0xB54BFB67 .
-After these 2 fields, .kdb and .kdbx differ totally :
-   .kdb has fixed number of fields taking a fixed number of bytes in its header, while .kdbx has a TLV list of fields in its header.
- */
 
-KeePassFile::KeePassFile(string path) : m_filePath(path),
-                                        m_version(KeepassVersion::UNKNOWN)
+/* --- Magic bytes in the keepass file header --- */
+
+const uint8_t signature_1_magic[] = {0x03, 0xD9, 0xA2, 0x9A};
+const uint8_t signature_2_KP_1 = 0x65;
+const uint8_t signature_2_KP_2_PreRelease = 0x66;
+const uint8_t signature_2_KP_2 = 0x67;
+
+
+/* --- KeepassFile members --- */
+
+KeepassFile::KeepassFile(string path) : m_filePath(path),
+    m_version(KeepassVersion::UNKNOWN)
 {
-
     readHeader();
 }
 
-KeepassVersion KeePassFile::version() const
+
+KeepassVersion KeepassFile::version() const
 {
     return m_version;
 }
 
-void KeePassFile::readHeader()
+
+void KeepassFile::readHeader()
 {
+    ifstream kpFile(m_filePath, ios::in|ios::binary);
 
-    ifstream kpFile(m_filePath, ios::binary);
-
-    uint32_t signature1;
-    kpFile >> signature1;
-
-    if (signature1 != signature_1_magic)
-    {
-        // TODO: throw a std::exception
-        throw "Invalid file format";
+    if (!kpFile.is_open()) {
+        throw KeepassFileException(string("File not found: '") + m_filePath + "'.");
     }
 
-    uint32_t signature2;
-    kpFile >> signature2;
+    char signature1[4];
+    kpFile.read(signature1, 4);
 
-    // TODO: throw std::exception in case of an unknown format
-    switch (signature2)
+    if (static_cast<uint8_t>(signature1[0]) != signature_1_magic[0] ||
+        static_cast<uint8_t>(signature1[1]) != signature_1_magic[1] ||
+        static_cast<uint8_t>(signature1[2]) != signature_1_magic[2] ||
+        static_cast<uint8_t>(signature1[3]) != signature_1_magic[3])
+    {
+        kpFile.close();
+        throw KeepassFileException("Invalid file format: file magic number mismatch.");
+    }
+
+    char signature2;
+    kpFile.read(&signature2, 1);
+    // Skips remaining 3 bytes - the fifth byte alone indicates the file version.
+    kpFile.ignore(3);
+
+    switch (static_cast<uint8_t>(signature2))
     {
 
     case signature_2_KP_1:
@@ -62,11 +72,15 @@ void KeePassFile::readHeader()
         break;
 
     case signature_2_KP_2:
-    case signature_2_KP_2_Beta:
+    case signature_2_KP_2_PreRelease:
         m_version = KeepassVersion::KDBX_2;
         break;
 
     default:
         m_version = KeepassVersion::UNKNOWN;
+        kpFile.close();
+        throw KeepassFileException("Unknown keepass file version.");
     }
+
+    kpFile.close();
 }
