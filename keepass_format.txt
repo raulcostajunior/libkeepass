@@ -1,0 +1,67 @@
+Convention: Byte array notation as it would appear in a hexeditor.
+
+= Layout=
+
+KDBX files, the keepass database files, are layout as follows:
+
+1) Bytes 0-3: Primary identifier, common across all kdbx versions: 
+  private static $sigByte1=[0x03,0xD9,0xA2,0x9A];
+
+2) Bytes 4-7: Secondary identifier. Byte 4 can be used to identify the file version (0x67 is latest, 0x66 is the KeePass 2 pre-release format and 0x55 is KeePass 1)
+	private static $sigByte2=[0x67,0xFB,0x4B,0xB5];
+
+3) Bytes 8-9: LE WORD, file version (minor)
+
+4) Bytes 10-11: LE WORD, file version (major)
+
+5) Dynamic header. Each header entry is [BYTE bId, LE WORD wSize, BYTE[wSize] bData].
+5.1) bId=0: END entry, no more header entries after this
+5.2) bId=1: COMMENT entry, unknown
+5.3) bId=2: CIPHERID, bData="31c1f2e6bf714350be5805216afc5aff" => outer encryption AES256, currently no others supported
+5.4) bId=3: COMPRESSIONFLAGS, LE DWORD. 0=payload not compressed, 1=payload compressed with GZip
+5.5) bId=4: MASTERSEED, 32 BYTEs string. See further down for usage/purpose. Length MUST be checked.
+5.6) bId=5: TRANSFORMSEED, variable length BYTE string. See further down for usage/purpose.
+5.7) bId=6: TRANSFORMROUNDS, LE QWORD. See further down for usage/purpose.
+5.8) bId=7: ENCRYPTIONIV, variable length BYTE string. See further down for usage/purpose.
+5.9) bId=8: PROTECTEDSTREAMKEY, variable length BYTE string. See further down for usage/purpose.
+5.10) bId=9: STREAMSTARTBYTES, variable length BYTE string. See further down for usage/purpose.
+5.11) bId=10: INNERRANDOMSTREAMID, LE DWORD. Inner stream encryption type, 0=>none, 1=>Arc4Variant, 2=>Salsa20
+
+6) Payload area (from end of header until file end).
+6.1) BYTE[len(STREAMSTARTBYTES)] BYTE string. When payload area is successfully decrypted, this area MUST equal STREAMSTARTBYTES. Normally the length is 32 bytes.
+6.2) There are at least 2 payload blocks in the file, each is laid out [LE DWORD dwBlockId, BYTE[32] sHash, LE DWORD dwBlockSize, BYTE[dwBlockSize] bData].
+
+dwBlockSize=0 and sHash=\0\0\...\0 (32x \0) signal the final block, this is the last data in the file.
+
+= Crypto stuff =
+To decrypt the payload area (encrypted as a whole), one needs to do the following:
+1) gather all the key composites and concatenate their bytes together. The obvious one is the password composite, whose bytes are gathered by taking the sha256 hash of the password (32 bytes).
+
+2) Over the concatenated composite key bytes, make a sha256 hash. This is the "composite key".
+
+3) Establish an AES128-ECB context, IV=16x \0, key TRANSFORMSEED.
+
+4) Copy the "composite key" into a variable called "transformed key". Over this variable, run the pseudocode transformed_key=aes.encrypt(transformed_key) the number of times specified in TRANSFORMROUNDS.
+
+5) Finally, set transformed_key=sha256(transformed_key).
+
+6) Obtain the master key by running master_key=sha256(CONCAT(MASTERSEED,transformed_key)).
+
+7) Depending on CIPHERID, set up a decryption context with key master_key and IV ENCRYPTIONIV. For the default AES encryption, use AES128-CBC with PKCS#7-style padding. This will yield raw_payload_area.
+
+8) Using the payload area specs from above, split out the individual payload blocks. In a kdbx file there should only be one block with ID 0 be present. Checking if the (master)key is correct can be done by comparing the first X bytes of the payload area with the value of STREAMSTARTBYTES in the header, X being the length of STREAMSTARTBYTES.
+
+9) If COMPRESSIONFLAGS = 1, run bData through gzdecode() to obtain the plain Keepass XML file; if COMPRESSIONFLAGS is 0, it is already in bData.
+
+10) Depending on INNERRANDOMSTREAMID, set up the inner stream context. 0 will mean all passwords in the XML will be in plain text, 1 that they are encrypted with Arc4Variant (not detailed here) and 2 that they will be encrypted with Salsa20.
+
+11) Set up a Salsa20 context using key PROTECTEDSTREAMKEY and fixed IV [0xE8,0x30,0x09,0x4B,0x97,0x20,0x5D,0x2A].
+
+12) Sequentially(!) look in the XML for "Value" nodes with the "Protected" attribute set to "True" (a suitable xpath might be "//Value[@Protected='True']").
+
+13) Obtain their innerText and run it through base64_decode to obtain the encrypted password/data. Then, run it through salsa20 to obtain the cleartext data.
+
+14) Optionally, check the header for integrity by taking sha256() hash of the whole header (up to, but excluding, the payload start bytes) and compare it with the base64_encode()d hash in the XML node <HeaderHash>(...)</HeaderHash>.
+
+= Notes =
+The inner stream cipher is supposed to deliver the same pseudo-random byte sequence using key+fixed IV as seed. Because of this, strict care must be taken to not mess up the ordering of decryption.
