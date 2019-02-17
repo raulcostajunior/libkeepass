@@ -2,47 +2,35 @@
 #define KEE_PASS_FILE_H
 
 #include <exception>
+#include <fstream>
 #include <string>
 
-enum class KeepassVersion: unsigned short {
+enum class KeePassVersion: unsigned short {
     UNKNOWN = 0, KDB_1, KDBX_2, KDBX_3, KDBX_4
 };
 
 
-class KeepassFileException: public std::exception {
-
-public:
-
-    KeepassFileException(std::string msg);
-
-    virtual const char* what() const noexcept;
-
-private:
-
-    std::string m_msg;
-
-};
-
-
-class KeepassFile
+class KeePassFile
 {
 
  public:
 
-   KeepassFile(std::string path);
+   KeePassFile(std::string path);
 
-   KeepassVersion version() const;
+   virtual ~KeePassFile();
+
+   KeePassVersion version() const;
 
  private:
 
    void readHeader();
 
    std::string m_filePath;
+   std::ifstream m_ifstream;
 
-   KeepassVersion m_version;
+   KeePassVersion m_version;
 
 };
-
 
 
 #endif

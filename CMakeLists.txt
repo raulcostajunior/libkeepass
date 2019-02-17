@@ -9,6 +9,8 @@ set (CMAKE_CXX_STANDARD 11)
 
 add_library (keepass_objs
     OBJECT
+      KeePassFileException.h
+      KeePassFileException.cpp
       KeePassFile.h
       KeePassFile.cpp
     )

@@ -2,16 +2,17 @@
 #include <iostream>
 
 #include "KeePassFile.h"
+#include "KeePassFileException.h"
 
 using namespace std;
 
 int main() {
 
     try {
-        KeepassFile kpFile("kp_1.kdbx");
+        KeePassFile kpFile("../libkeepass/db_samples/kp_1.kdbx"); // Password is "kppass"
         cout << "Keepass file version: " << static_cast<unsigned short>(kpFile.version()) << endl;
     }
-    catch (KeepassFileException& e) {
+    catch (KeePassFileException& e) {
         cout << "Error reading file: " << e.what() << endl;
     }
 
