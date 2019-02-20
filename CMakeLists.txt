@@ -41,7 +41,7 @@ set_target_properties(keepass_shared
     )
 
 add_executable(keepassConsole
-    keepassConsole.cpp
+    KeePassConsole.cpp
     )
 
 target_link_libraries(keepassConsole
