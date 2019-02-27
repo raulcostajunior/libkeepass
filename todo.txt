@@ -1,0 +1,14 @@
+.Add -[c]reate optional command line argument that must
+precede a valid file_path command line argument. In that 
+case, kpass will prompt the user twice for the password
+for the kepass file to be created. Inside the shell 
+there will be no command 'create' (nor any 'open') as 
+those commands would make it necessary provide some
+file system navigation support, duplicating what is 
+already provided by the os shell;
+
+.Remove save command - all changes to the password 
+records in the file should be immediately saved.
+
+.Place the source files for the lib and for the kpass
+console app in their own directories. 
