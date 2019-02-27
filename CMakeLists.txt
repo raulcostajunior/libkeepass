@@ -40,11 +40,11 @@ set_target_properties(keepass_shared
       OUTPUT_NAME "keepass"
     )
 
-add_executable(keepassConsole
+add_executable(kpass
     KeePassConsole.cpp
     )
 
-target_link_libraries(keepassConsole
+target_link_libraries(kpass
     keepass_static
     )
 
