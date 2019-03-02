@@ -3,17 +3,22 @@ The ``kpass`` Console Application
 
 I. Command line syntax
 ----------------------
+<pre>
+    <b>kpass</b> [-c] <i>file_path</i>
+</pre>
 
-    kpass [file_path]
+Where ``-c ``, *create command*, is an optional parameter that tells *kpass* to create a new KeePass file.  ``file_path`` is the path of the KeePass file to be created. If ``-c`` is not in the command line, ``file_path`` is interpreted as the path for an existing KeePass file to be opened.
 
-Where ``file_path`` is an optional argument and is the name of the keepass cyphered file to be opened. If an existing file path is provided, ``kpass`` will prompt the user for a master password to open the file - support for key files will not be implemented yet.
+If a command line with an invalid syntax is provided, a helping message describing the expected syntax is displayed and *kpass* exits. If *kpass* is invoked in create mode with the path of an already existing file, an error message is displayed and *kpass* exits. If *kpass* is invoked in open file mode (command line with no *create command*), *kpass* checks if ``file_path`` corresponds to a valid KeePass file. If that is not the case, an error message is displayed and *kpass* exits.
 
-If a valid command line is used to launch ``kpass``, the kpass "shell" will be started. A command line is considered valid if it conforms to the expected syntax and if it provides a path to an existing file (whenever the ``file_path`` argument is used). If a command line with an invalid syntax is provided, a helping message describing the expected syntax is shown to the user and ``kpass`` exits. If a syntatically valid command line is provided, but with an inexisting ``file_path``, an error is displayed to the user and ``kpass`` exits.
+When invoked in create mode, *kpass* prompts for the password for the new KeePass file and for its confirmation. After a valid password is provided (minimum 6 characters) and confirmed, *kpass* launches its "shell".
 
-II. Commands Supported by the ``kpass`` "Shell"
+When invoked in open mode, *kpass* prompts for the KeePass file password. If the right password is provided, *kpass* launches its "shell". 
+
+II. Commands Supported by the *kpass "Shell"*
 ---------------------------------------------
 
-III. Settings Supported by ``kpass``
+III. Settings Supported by *kpass*
 ----------------------------------
 
 IV. Password Record Templates
