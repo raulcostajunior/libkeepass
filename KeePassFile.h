@@ -33,6 +33,13 @@ class KeePassFile
    const FileVersion& fileVersion() const;
    bool isPayloadCompressed() const;
    const std::vector<uint8_t>& masterSeed() const;
+   const std::vector<uint8_t>& encryptionIV() const;
+   const std::vector<uint8_t>& transformSeed() const;
+   const uint16_t& transformRounds() const;
+   const std::vector<uint8_t>& protectedStreamBytes() const;
+   const std::vector<uint8_t>& streamStartBytes() const;
+   const uint16_t& innerRandStreamId() const;
+
 
  private:
 
@@ -47,6 +54,12 @@ class KeePassFile
    FileVersion _fileVersion;
    bool _isPayloadCompressed; // When true, the payload is Gziped.
    std::vector<std::uint8_t> _masterSeed;
+   std::vector<std::uint8_t> _encryptionIV;
+   std::vector<std::uint8_t> _transformSeed;
+   uint16_t _transformRounds;
+   std::vector<std::uint8_t> _protectedStreamBytes;
+   std::vector<std::uint8_t> _streamStartBytes;
+   uint16_t _innerRandStreamId;
 };
 
 

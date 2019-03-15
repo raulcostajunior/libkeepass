@@ -50,42 +50,111 @@ const vector<uint8_t>& KeePassFile::masterSeed() const {
 }
 
 
-void KeePassFile::processHeaderField(HeaderEntryType entryType, uint16_t entrySize, const char* entryData)
+const vector<uint8_t>& KeePassFile::encryptionIV() const {
+    return _encryptionIV;
+}
+
+
+const vector<uint8_t>& KeePassFile::protectedStreamBytes() const {
+    return _protectedStreamBytes;
+}
+
+
+const std::vector<uint8_t>& KeePassFile::transformSeed() const {
+    return _transformSeed;
+}
+
+
+const uint16_t& KeePassFile::transformRounds() const {
+    return _transformRounds;
+}
+
+
+const std::vector<uint8_t>& KeePassFile::streamStartBytes() const {
+    return _streamStartBytes;
+}
+
+
+const uint16_t& KeePassFile::innerRandStreamId() const {
+    return _innerRandStreamId;
+}
+
+
+void KeePassFile::processHeaderField(HeaderEntryType entryType, uint16_t entrySize, const char *entryData)
 {
-    switch (entryType) {
-    case HeaderEntryType::END:
-        // Nothing to do here - at least for now END doesn´t change the internal state of the object.
+    switch (entryType)
+    {
+    case HeaderEntryType::END: // Nothing to do here - at least for now END doesn´t change the internal state of the object.
         break;
-    case HeaderEntryType::COMMENT:
-        // Just ignores the comment for now;
+    case HeaderEntryType::COMMENT: // Just ignores the comment for now;
         break;
     case HeaderEntryType::CIPHER_ID:
         // There's just one algorithm supported for outer encryption, AES256.
         // This field is plainly ignored for now.
         break;
-    case HeaderEntryType::COMPRESSION_FLAGS: {
-        uint16_t flagValue = static_cast<uint8_t>(entryData[0]) + 10*static_cast<uint8_t>(entryData[1]);
+    case HeaderEntryType::COMPRESSION_FLAGS:
+    {
+        uint16_t flagValue = static_cast<uint8_t>(entryData[0]) + 10 * static_cast<uint8_t>(entryData[1]);
         _isPayloadCompressed = flagValue; // 0 is not compressed; 1 is gziped.
         break;
     }
-    case HeaderEntryType::MASTER_SEED: {
+    case HeaderEntryType::MASTER_SEED:
+    {
         _masterSeed.clear();
-        for (uint16_t i = 0; i < entrySize; i++) {
+        for (uint16_t i = 0; i < entrySize; i++)
+        {
             _masterSeed.push_back(static_cast<uint8_t>(entryData[i]));
         }
         break;
     }
     case HeaderEntryType::ENCRYPTION_IV:
-    case HeaderEntryType::TRANSFORM_SEED:
-    case HeaderEntryType::TRANSFORM_ROUNDS:
-    case HeaderEntryType::STREAM_START_BYTES:
-    case HeaderEntryType::PROTECTED_STREAM_KEY:
-    case HeaderEntryType::INNER_RANDOM_STREAM_ID:
-       // TODO: handle all these remaining types
+    {
+        _encryptionIV.clear();
+        for (uint16_t i = 0; i < entrySize; i++)
+        {
+            _encryptionIV.push_back(static_cast<uint8_t>(entryData[i]));
+        }
         break;
     }
+    case HeaderEntryType::TRANSFORM_SEED:
+    {
+        _transformSeed.clear();
+        for (uint16_t i = 0; i < entrySize; i++)
+        {
+            _transformSeed.push_back(static_cast<uint8_t>(entryData[i]));
+        }
+        break;
+    }
+    case HeaderEntryType::TRANSFORM_ROUNDS:
+    {
+        _transformRounds = static_cast<uint8_t>(entryData[0]) + 10 * static_cast<uint8_t>(entryData[1]);
+        break;
+    }
+    case HeaderEntryType::STREAM_START_BYTES:
+    {
+        _streamStartBytes.clear();
+        for (uint16_t i = 0; i < entrySize; i++)
+        {
+            _streamStartBytes.push_back(static_cast<uint8_t>(entryData[i]));
+        }
+        break;
+    }
+    case HeaderEntryType::PROTECTED_STREAM_KEY:
+    {
+        _protectedStreamBytes.clear();
+        for (uint16_t i = 0; i < entrySize; i++)
+        {
+            _protectedStreamBytes.push_back(static_cast<uint8_t>(entryData[i]));
+        }
+        break;
+    }
+    case HeaderEntryType::INNER_RANDOM_STREAM_ID:
+    {
+        _innerRandStreamId = static_cast<uint8_t>(entryData[0]) + 10 * static_cast<uint8_t>(entryData[1]);
+        break;
+    }
+    }
 }
-
 
 void KeePassFile::readHeader() {
     char readBuff[kMaxHeaderBufferSize];
