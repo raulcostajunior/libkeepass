@@ -18,7 +18,8 @@ const uint16_t kMaxHeaderBufferSize = 16384;
 
 KeePassFile::KeePassFile(string path) :
         _filePath(path),
-        _keepassSpecVersion(FormatVersion::UNKNOWN) {
+        _keepassSpecVersion(FormatVersion::UNKNOWN),
+        _headerSize(0) {
     readHeader();
 }
 
@@ -77,6 +78,10 @@ const std::vector<uint8_t>& KeePassFile::streamStartBytes() const {
 
 const uint16_t& KeePassFile::innerRandStreamId() const {
     return _innerRandStreamId;
+}
+
+const uint16_t& KeePassFile::headerSize() const {
+    return _headerSize;
 }
 
 
@@ -166,6 +171,7 @@ void KeePassFile::readHeader() {
     }
 
     _ifstream.read(readBuff, 4);
+    _headerSize += _ifstream.gcount();
 
     if (static_cast<uint8_t>(readBuff[0]) != signature_1_magic[0] ||
         static_cast<uint8_t>(readBuff[1]) != signature_1_magic[1] ||
@@ -177,8 +183,10 @@ void KeePassFile::readHeader() {
     }
 
     _ifstream.read(readBuff, 1);
+    _headerSize += _ifstream.gcount();
     // Skips remaining 3 bytes - the fifth byte alone indicates the file format version.
     _ifstream.ignore(3);
+    _headerSize += _ifstream.gcount();
 
     switch (static_cast<uint8_t>(readBuff[0]))
     {
@@ -198,18 +206,23 @@ void KeePassFile::readHeader() {
     }
 
     _ifstream.read(readBuff, 2);
+    _headerSize += _ifstream.gcount();
     _fileVersion.minor = static_cast<uint8_t>(readBuff[0]) + 10*static_cast<uint8_t>(readBuff[1]);
     _ifstream.read(readBuff, 2);
+    _headerSize += _ifstream.gcount();
     _fileVersion.major = static_cast<uint8_t>(readBuff[0]) + 10*static_cast<uint8_t>(readBuff[1]);
 
     // Decode the dynamic header
     uint8_t currEntryType;
     do {
         _ifstream.read(readBuff, 1);
+        _headerSize += _ifstream.gcount();
         currEntryType = static_cast<uint8_t>(readBuff[0]);
         _ifstream.read(readBuff, 2);
+        _headerSize += _ifstream.gcount();
         uint16_t entrySize = static_cast<uint8_t>(readBuff[0]) + 10*static_cast<uint8_t>(readBuff[1]);
         _ifstream.read(readBuff, entrySize);
+        _headerSize += _ifstream.gcount();
 
         processHeaderField(static_cast<HeaderEntryType>(currEntryType), entrySize, readBuff);
     }

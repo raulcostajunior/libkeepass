@@ -39,6 +39,7 @@ class KeePassFile
    const std::vector<uint8_t>& protectedStreamBytes() const;
    const std::vector<uint8_t>& streamStartBytes() const;
    const uint16_t& innerRandStreamId() const;
+   const uint16_t& headerSize() const;
 
 
  private:
@@ -60,6 +61,8 @@ class KeePassFile
    std::vector<std::uint8_t> _protectedStreamBytes;
    std::vector<std::uint8_t> _streamStartBytes;
    uint16_t _innerRandStreamId;
+
+   uint16_t _headerSize;
 };
 
 

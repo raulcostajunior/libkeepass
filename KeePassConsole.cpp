@@ -14,6 +14,7 @@ int main() {
         cout << "File version:       " << kpFile.fileVersion().major << "." << kpFile.fileVersion().minor << endl;
         cout << "Payload compressed: " << kpFile.isPayloadCompressed() << endl;
         cout << "MasterSeed size:    " << kpFile.masterSeed().size() << " bytes." << endl;
+        cout << "File Header size:   " << kpFile.headerSize() << " bytes." << endl;
     }
     catch (KeePassFileException& e) {
         cout << "Error reading file: " << e.what() << endl;
