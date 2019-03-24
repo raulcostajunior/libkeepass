@@ -18,8 +18,7 @@ const uint16_t kMaxHeaderBufferSize = 16384;
 
 KeePassFile::KeePassFile(string path) :
         _filePath(path),
-        _keepassSpecVersion(FormatVersion::UNKNOWN),
-        _headerSize(0) {
+        _keepassSpecVersion(FormatVersion::UNKNOWN) {
     readHeader();
 }
 
@@ -164,6 +163,7 @@ void KeePassFile::processHeaderField(HeaderEntryType entryType, uint16_t entrySi
 void KeePassFile::readHeader() {
     char readBuff[kMaxHeaderBufferSize];
 
+    _headerSize = 0;
     _ifstream.open(_filePath, ios::in | ios::binary);
 
     if (!_ifstream.is_open()) {
