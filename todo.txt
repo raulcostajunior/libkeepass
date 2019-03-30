@@ -1,9 +1,18 @@
 .Separate the keepass console from the libkeepass 
  (different repositories). libkeepass should have 
- unit tests.
+ unit tests (based on boost::test?);
 
-.Incorporate botan dependency in the CMake project 
- file.
+.Convert KeePassFile to be RAII compliant - the
+ initial header read operation from the ctor should
+ be called from the method that reads the file 
+ searching for a given set of entries (to be optimized
+ when the library supports session oriented mode -
+ cache decyphered contents from file given its path,
+ the last update timestamp and the time for keeping
+ decyphered contents stored in memory). The non session
+ working mode - basic mode - will always go to the 
+ "filesystem" (be it local, remote, cloud drive, ...)
+ for retrieving contents.  
 
 . Decode the file payload.
 
