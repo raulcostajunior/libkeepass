@@ -166,6 +166,9 @@ void KeePassFile::processHeaderField(HeaderEntryType entryType, uint16_t entrySi
             _innerRandStreamId = InnerStreamEncryption::SALSA20;
             break;
         default:
+            if (_ifstream.is_open()) {
+                _ifstream.close();
+            }
             throw KeePassFileException("Invalid file format: unrecognized inner stream encryption specification.");
         }
     }

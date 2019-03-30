@@ -45,7 +45,6 @@ class KeePassFile
    const InnerStreamEncryption& innerRandStreamId() const;
    const uint16_t& headerSize() const;
 
-
  private:
 
    void readHeader();
