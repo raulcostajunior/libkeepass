@@ -75,7 +75,7 @@ const std::vector<uint8_t>& KeePassFile::streamStartBytes() const {
 }
 
 
-const uint16_t& KeePassFile::innerRandStreamId() const {
+const InnerStreamEncryption& KeePassFile::innerRandStreamId() const {
     return _innerRandStreamId;
 }
 
@@ -154,8 +154,20 @@ void KeePassFile::processHeaderField(HeaderEntryType entryType, uint16_t entrySi
     }
     case HeaderEntryType::INNER_RANDOM_STREAM_ID:
     {
-        _innerRandStreamId = static_cast<uint8_t>(entryData[0]) + 10 * static_cast<uint8_t>(entryData[1]);
-        break;
+        uint8_t idValue = static_cast<uint8_t>(entryData[0]) + 10 * static_cast<uint8_t>(entryData[1]);
+        switch (idValue) {
+        case 0:
+            _innerRandStreamId = InnerStreamEncryption::NONE;
+            break;
+        case 1:
+            _innerRandStreamId = InnerStreamEncryption::ARC4_VARIANT;
+            break;
+        case 2:
+            _innerRandStreamId = InnerStreamEncryption::SALSA20;
+            break;
+        default:
+            throw KeePassFileException("Invalid file format: unrecognized inner stream encryption specification.");
+        }
     }
     }
 }

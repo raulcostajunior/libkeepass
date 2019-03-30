@@ -16,6 +16,10 @@ enum class HeaderEntryType: uint8_t {
     PROTECTED_STREAM_KEY, STREAM_START_BYTES, INNER_RANDOM_STREAM_ID
 };
 
+enum class InnerStreamEncryption: uint8_t {
+    NONE, ARC4_VARIANT, SALSA20
+};
+
 struct FileVersion {
     uint16_t minor;
     uint16_t major;
@@ -38,7 +42,7 @@ class KeePassFile
    const uint16_t& transformRounds() const;
    const std::vector<uint8_t>& protectedStreamBytes() const;
    const std::vector<uint8_t>& streamStartBytes() const;
-   const uint16_t& innerRandStreamId() const;
+   const InnerStreamEncryption& innerRandStreamId() const;
    const uint16_t& headerSize() const;
 
 
@@ -60,7 +64,7 @@ class KeePassFile
    uint16_t _transformRounds;
    std::vector<std::uint8_t> _protectedStreamBytes;
    std::vector<std::uint8_t> _streamStartBytes;
-   uint16_t _innerRandStreamId;
+   InnerStreamEncryption _innerRandStreamId;
 
    uint16_t _headerSize;
 };
