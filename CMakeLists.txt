@@ -11,6 +11,8 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/"
     )
 
+find_package(CryptoPP REQUIRED)
+
 add_library (keepass_objs
     OBJECT
       KeePassFileException.h
@@ -22,6 +24,11 @@ add_library (keepass_objs
 set_target_properties(keepass_objs
     PROPERTIES
       POSITION_INDEPENDENT_CODE 1
+    )
+
+target_link_libraries(keepass_objs
+    PUBLIC
+      CryptoPP
     )
 
 add_library (keepass_static
@@ -51,6 +58,3 @@ add_executable(kpass
 target_link_libraries(kpass
     keepass_static
     )
-
-
-
