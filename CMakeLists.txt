@@ -51,10 +51,13 @@ set_target_properties(keepass_shared
       OUTPUT_NAME "keepass"
     )
 
-add_executable(kpass
-    KeePassConsole.cpp
+add_executable(unit_tests unit_tests.cpp)
+target_link_libraries(unit_tests keepass_static)
+
+enable_testing()
+
+add_test (
+    NAME unit_tests
+    COMMAND $<TARGET_FILE:unit_tests> --success
     )
 
-target_link_libraries(kpass
-    keepass_static
-    )
