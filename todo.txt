@@ -1,6 +1,6 @@
-.Separate the keepass console from the libkeepass 
- (different repositories). libkeepass should have 
- unit tests (based on boost::test?);
+.Put all the libkeepass source files under the 'src' directory
+ and the source files related to tests under the 'test'
+ directory - catch2, unit_tests, ...
 
 .Convert KeePassFile to be RAII compliant - the
  initial header read operation from the ctor should
