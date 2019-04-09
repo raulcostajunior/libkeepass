@@ -2,7 +2,11 @@
 #include "KeePassFile.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -19,7 +23,6 @@ const uint16_t kMaxHeaderBufferSize = 16384;
 KeePassFile::KeePassFile(string path) :
         _filePath(path),
         _keepassSpecVersion(FormatVersion::UNKNOWN) {
-    readHeader();
 }
 
 
@@ -60,7 +63,7 @@ const vector<uint8_t>& KeePassFile::protectedStreamBytes() const {
 }
 
 
-const std::vector<uint8_t>& KeePassFile::transformSeed() const {
+const vector<uint8_t>& KeePassFile::transformSeed() const {
     return _transformSeed;
 }
 
@@ -166,9 +169,6 @@ void KeePassFile::processHeaderField(HeaderEntryType entryType, uint16_t entrySi
             _innerRandStreamId = InnerStreamEncryption::SALSA20;
             break;
         default:
-            if (_ifstream.is_open()) {
-                _ifstream.close();
-            }
             throw KeePassFileException("Invalid file format: unrecognized inner stream encryption specification.");
         }
     }
@@ -193,7 +193,6 @@ void KeePassFile::readHeader() {
         static_cast<uint8_t>(readBuff[2]) != signature_1_magic[2] ||
         static_cast<uint8_t>(readBuff[3]) != signature_1_magic[3])
     {
-        _ifstream.close();
         throw KeePassFileException("Invalid file format: file magic number mismatch.");
     }
 
