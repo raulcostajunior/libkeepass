@@ -19,6 +19,8 @@ add_library (keepass_objs
       KeePassFileException.cpp
       KeePassFile.h
       KeePassFile.cpp
+      KeePassFileSettings.h
+      KeePassFileSettings.cpp
     )
 
 set_target_properties(keepass_objs
