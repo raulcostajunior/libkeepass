@@ -56,6 +56,10 @@ set_target_properties(keepass_shared
 add_executable(unit_tests unit_tests.cpp)
 target_link_libraries(unit_tests keepass_static)
 
+add_custom_command(TARGET unit_tests POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/db_samples $<TARGET_FILE_DIR:unit_tests>)
+
 enable_testing()
 
 add_test (
