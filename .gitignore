@@ -33,7 +33,7 @@
 
 # CMake
 CMakeCache.txt
-CMakeLists.txt.user
+CMakeLists.txt.user*
 CMakeFiles
 CMakeScripts
 Testing
