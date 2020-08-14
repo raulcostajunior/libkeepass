@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
 
 project (KeePassLib
     LANGUAGES
@@ -10,8 +10,6 @@ set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_MODULE_PATH 
     ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/"
     )
-
-find_package(CryptoPP REQUIRED)
 
 add_library (keepass_objs
     OBJECT
