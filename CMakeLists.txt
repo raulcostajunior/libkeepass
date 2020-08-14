@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.2 FATAL_ERROR)
 
 project (KeePassLib
     LANGUAGES
@@ -6,29 +6,22 @@ project (KeePassLib
     )
 
 set (CMAKE_CXX_STANDARD 11)
-
-set(CMAKE_MODULE_PATH 
-    ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/"
-    )
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_library (keepass_objs
     OBJECT
-      KeePassFileException.h
-      KeePassFileException.cpp
-      KeePassFile.h
-      KeePassFile.cpp
-      KeePassFileSettings.h
-      KeePassFileSettings.cpp
+      src/KeePassFileException.h
+      src/KeePassFileException.cpp
+      src/KeePassFile.h
+      src/KeePassFile.cpp
+      src/KeePassFileSettings.h
+      src/KeePassFileSettings.cpp
     )
 
 set_target_properties(keepass_objs
     PROPERTIES
       POSITION_INDEPENDENT_CODE 1
-    )
-
-target_link_libraries(keepass_objs
-    PUBLIC
-      CryptoPP
     )
 
 add_library (keepass_static
@@ -51,17 +44,17 @@ set_target_properties(keepass_shared
       OUTPUT_NAME "keepass"
     )
 
-add_executable(unit_tests unit_tests.cpp)
-target_link_libraries(unit_tests keepass_static)
+# add_executable(unit_tests unit_tests.cpp)
+# target_link_libraries(unit_tests keepass_static)
 
-add_custom_command(TARGET unit_tests POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/db_samples $<TARGET_FILE_DIR:unit_tests>)
+#add_custom_command(TARGET unit_tests POST_BUILD
+#                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+#                       ${CMAKE_SOURCE_DIR}/db_samples $<TARGET_FILE_DIR:unit_tests>)
 
-enable_testing()
+#enable_testing()
 
-add_test (
-    NAME unit_tests
-    COMMAND $<TARGET_FILE:unit_tests> --success
-    )
+#add_test (
+#    NAME unit_tests
+#    COMMAND $<TARGET_FILE:unit_tests> --success
+#    )
 
